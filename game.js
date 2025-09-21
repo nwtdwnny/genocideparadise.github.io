@@ -149,8 +149,3 @@ class Game {
 document.addEventListener('DOMContentLoaded', () => {
     new Game();
 });
-
-// Инициализация игры при загрузке документа
-document.addEventListener('DOMContentLoaded', function() {
-    const game = new Game();
-});
