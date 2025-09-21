@@ -19,15 +19,14 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 20px;
+    padding: 20px;
 }
 
 .game-field {
     position: relative;
     width: 1000px;
     height: 1000px;
-    background-image: url('1017.jpg');
-    background-size: cover;
-    background-position: center;
+    background-color: #3498db; /* Синий фон вместо изображения */
     border: 3px solid #34495e;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     overflow: hidden;
@@ -42,9 +41,9 @@ body {
     width: 100%;
     height: 100%;
     background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-    background-size: 100px 166.67px; /* 1000px / 10 колонок = 100px, 1000px / 6 рядов = 166.67px */
+        linear-gradient(to right, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
+    background-size: 100px 166.67px;
     pointer-events: none;
 }
 
@@ -52,19 +51,42 @@ body {
     position: absolute;
     width: 80px;
     height: 80px;
+    background-color: #e74c3c; /* Красный квадрат вместо изображения */
+    border: 3px solid #c0392b;
+    border-radius: 8px;
     transition: none;
     z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.player::after {
+    content: 'P';
 }
 
 .controls-info {
     color: white;
-    font-size: 18px;
+    font-size: 16px;
     text-align: center;
     background: rgba(0, 0, 0, 0.7);
-    padding: 10px 20px;
+    padding: 15px;
     border-radius: 10px;
+    line-height: 1.6;
 }
 
 .controls-info p {
-    margin: 0;
+    margin: 5px 0;
+}
+
+.debug-info {
+    color: white;
+    background: rgba(255, 0, 0, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 14px;
 }
