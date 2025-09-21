@@ -1,4 +1,3 @@
-
 // Конфигурация игрового поля
 const COLS = 10;   // 10 колонн
 const ROWS = 6;    // 6 рядов
@@ -32,11 +31,33 @@ class Game {
         this.setupEventListeners();
         this.updatePlayerPosition();
         this.updateStatsDisplay();
+        
+        console.log('Игра загружена! Размер клеток: ' + 
+                   CELL_WIDTH.toFixed(1) + 'x' + 
+                   CELL_HEIGHT.toFixed(1) + ' пикселей');
     }
     
     // Создание игрового поля
     createGameField() {
         const gameField = document.getElementById('game-field');
+        
+        // Очищаем поле, но сохраняем игрока и координаты
+        const playerElement = document.getElementById('player');
+        const coordinatesElement = document.getElementById('coordinates');
+        
+        // Временно удаляем их
+        if (playerElement) playerElement.remove();
+        if (coordinatesElement) coordinatesElement.remove();
+        
+        // Очищаем поле
+        gameField.innerHTML = '';
+        
+        // Создаем контейнер для клеток
+        const cellsContainer = document.createElement('div');
+        cellsContainer.id = 'cells-container';
+        cellsContainer.style.position = 'relative';
+        cellsContainer.style.width = '100%';
+        cellsContainer.style.height = '100%';
         
         for (let y = 0; y < ROWS; y++) {
             for (let x = 0; x < COLS; x++) {
@@ -49,12 +70,27 @@ class Game {
                 
                 // Добавляем чередование цветов для наглядности
                 if ((x + y) % 2 === 0) {
-                    cell.style.backgroundColor = 'rgba(200, 220, 200, 0.5)';
+                    cell.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                } else {
+                    cell.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
                 }
                 
-                gameField.appendChild(cell);
+                // Добавляем координаты в ячейку (для отладки)
+                cell.setAttribute('data-x', x);
+                cell.setAttribute('data-y', y);
+                
+                cellsContainer.appendChild(cell);
             }
         }
+        
+        gameField.appendChild(cellsContainer);
+        
+        // Возвращаем игрока и координаты
+        if (playerElement) gameField.appendChild(playerElement);
+        if (coordinatesElement) gameField.appendChild(coordinatesElement);
+        
+        // Обновляем позицию игрока
+        this.updatePlayerPosition();
     }
     
     // Настройка обработчиков событий
@@ -77,8 +113,17 @@ class Game {
         // Заглушки для действий
         document.querySelectorAll('.action-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                alert('Действие "' + btn.textContent + '" будет реализовано позже!');
+                this.showMessage('Действие "' + btn.textContent + '" будет реализовано позже!');
             });
+        });
+        
+        // Обработка кликов по клеткам поля
+        document.getElementById('game-field').addEventListener('click', (e) => {
+            if (e.target.classList.contains('cell')) {
+                const x = parseInt(e.target.getAttribute('data-x'));
+                const y = parseInt(e.target.getAttribute('data-y'));
+                this.moveToCell(x, y);
+            }
         });
     }
     
@@ -86,6 +131,11 @@ class Game {
     handleKeyPress(event) {
         const key = event.key.toUpperCase();
         this.handleMovement(key);
+        
+        // Предотвращаем прокрутку страницы при использовании клавиш WASD
+        if (['W', 'A', 'S', 'D', 'Q', 'E', 'Z', 'X'].includes(key)) {
+            event.preventDefault();
+        }
     }
     
     // Обработка движения
@@ -119,32 +169,69 @@ class Game {
         }
     }
     
+    // Перемещение к конкретной клетке
+    moveToCell(x, y) {
+        if (x >= 0 && x < COLS && y >= 0 && y < ROWS) {
+            this.playerPosition.x = x;
+            this.playerPosition.y = y;
+            this.updatePlayerPosition();
+            this.showMessage(`Перемещение в клетку (${x}, ${y})`);
+        }
+    }
+    
     // Обновление позиции игрока
     updatePlayerPosition() {
         const player = document.getElementById('player');
-        player.style.left = (this.playerPosition.x * CELL_WIDTH + CELL_WIDTH/2 - 30) + 'px';
-        player.style.top = (this.playerPosition.y * CELL_HEIGHT + CELL_HEIGHT/2 - 30) + 'px';
-        
-        // Обновляем координаты
-        document.getElementById('coordinates').textContent = 
-            `X: ${this.playerPosition.x}, Y: ${this.playerPosition.y}`;
+        if (player) {
+            player.style.left = (this.playerPosition.x * CELL_WIDTH + CELL_WIDTH/2 - 35) + 'px';
+            player.style.top = (this.playerPosition.y * CELL_HEIGHT + CELL_HEIGHT/2 - 35) + 'px';
+            
+            // Обновляем координаты
+            const coords = document.getElementById('coordinates');
+            if (coords) {
+                coords.textContent = `X: ${this.playerPosition.x}, Y: ${this.playerPosition.y}`;
+            }
+        }
     }
     
     // Обновление статистики на экране
     updateStatsDisplay() {
-        document.getElementById('health-value').textContent = this.playerStats.health;
-        document.getElementById('hunger-value').textContent = this.playerStats.hunger;
-        document.getElementById('energy-value').textContent = this.playerStats.energy;
-        document.getElementById('mood-value').textContent = this.playerStats.mood;
-        document.getElementById('strength-value').textContent = this.playerStats.strength;
-        document.getElementById('agility-value').textContent = this.playerStats.agility;
-        document.getElementById('stamina-value').textContent = this.playerStats.stamina;
-        document.getElementById('intelligence-value').textContent = this.playerStats.intelligence;
+        const stats = this.playerStats;
+        document.getElementById('health-value').textContent = stats.health;
+        document.getElementById('hunger-value').textContent = stats.hunger;
+        document.getElementById('energy-value').textContent = stats.energy;
+        document.getElementById('mood-value').textContent = stats.mood;
+        document.getElementById('strength-value').textContent = stats.strength;
+        document.getElementById('agility-value').textContent = stats.agility;
+        document.getElementById('stamina-value').textContent = stats.stamina;
+        document.getElementById('intelligence-value').textContent = stats.intelligence;
+    }
+    
+    // Вспомогательная функция для показа сообщений
+    showMessage(text) {
+        // Создаем временное сообщение
+        const message = document.createElement('div');
+        message.textContent = text;
+        message.style.position = 'fixed';
+        message.style.top = '20px';
+        message.style.left = '50%';
+        message.style.transform = 'translateX(-50%)';
+        message.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        message.style.color = 'white';
+        message.style.padding = '10px 20px';
+        message.style.borderRadius = '5px';
+        message.style.zIndex = '1000';
+        
+        document.body.appendChild(message);
+        
+        // Удаляем сообщение через 3 секунды
+        setTimeout(() => {
+            document.body.removeChild(message);
+        }, 3000);
     }
 }
 
 // Инициализация игры при загрузке документа
 document.addEventListener('DOMContentLoaded', function() {
     const game = new Game();
-    console.log('Игра загружена! Размер клеток: ' + CELL_WIDTH.toFixed(1) + 'x' + CELL_HEIGHT.toFixed(1) + ' пикселей');
 });
