@@ -1,9 +1,18 @@
+function handleImageError(imageName) {
+    console.error(`Ошибка загрузки изображения: ${imageName}.png`);
+    const debugInfo = document.getElementById('debugInfo');
+    if (debugInfo) {
+        debugInfo.textContent = `Ошибка загрузки: ${imageName}.png. Используются замены.`;
+    }
+}
+
 class Game {
     constructor() {
         this.player = document.getElementById('player');
         this.gameField = document.getElementById('gameField');
-        this.cellWidth = 100; // 1000px / 10 колонок
-        this.cellHeight = 166.67; // 1000px / 6 рядов
+        this.positionInfo = document.getElementById('positionInfo');
+        this.cellWidth = 100;
+        this.cellHeight = 166.67;
         this.playerSize = 80;
         this.moveDelay = 180;
         
@@ -12,11 +21,22 @@ class Game {
         this.keysPressed = {};
         this.moveInterval = null;
         
+        console.log('Игра инициализирована');
         this.init();
     }
     
     init() {
-        // Центрируем игрока в начале
+        if (!this.player) {
+            console.error('Элемент player не найден!');
+            return;
+        }
+        
+        if (!this.gameField) {
+            console.error('Элемент gameField не найден!');
+            return;
+        }
+        
+        // Центрируем игрока
         this.centerPlayer();
         
         // Обработчики событий
@@ -29,6 +49,8 @@ class Game {
                 e.preventDefault();
             }
         });
+        
+        console.log('Игра готова к использованию');
     }
     
     centerPlayer() {
@@ -36,6 +58,7 @@ class Game {
         this.playerX = Math.floor(5 * this.cellWidth + (this.cellWidth - this.playerSize) / 2);
         this.playerY = Math.floor(3 * this.cellHeight + (this.cellHeight - this.playerSize) / 2);
         this.updatePlayerPosition();
+        console.log('Игрок размещен в центре');
     }
     
     handleKeyDown(e) {
@@ -53,6 +76,8 @@ class Game {
                     this.continuousMove();
                 }, this.moveDelay);
             }
+            
+            console.log(`Нажата клавиша: ${key}`);
         }
     }
     
@@ -66,6 +91,7 @@ class Game {
             if (Object.keys(this.keysPressed).length === 0 && this.moveInterval) {
                 clearInterval(this.moveInterval);
                 this.moveInterval = null;
+                console.log('Все клавиши отпущены');
             }
         }
     }
@@ -117,6 +143,9 @@ class Game {
             this.playerX = newX;
             this.playerY = newY;
             this.updatePlayerPosition();
+            console.log(`Перемещение: ${key}, Новая позиция: ${this.playerX}, ${this.playerY}`);
+        } else {
+            console.log(`Движение заблокировано: выход за границы (${newX}, ${newY})`);
         }
     }
     
@@ -130,10 +159,24 @@ class Game {
     updatePlayerPosition() {
         this.player.style.left = this.playerX + 'px';
         this.player.style.top = this.playerY + 'px';
+        
+        if (this.positionInfo) {
+            this.positionInfo.textContent = `${this.playerX}, ${this.playerY}`;
+        }
     }
 }
 
 // Запуск игры при загрузке страницы
 window.addEventListener('load', () => {
+    console.log('Страница загружена, запуск игры...');
     new Game();
+});
+
+// Обработчик ошибок
+window.addEventListener('error', (e) => {
+    console.error('Произошла ошибка:', e.error);
+    const debugInfo = document.getElementById('debugInfo');
+    if (debugInfo) {
+        debugInfo.textContent = `Ошибка: ${e.message}`;
+    }
 });
