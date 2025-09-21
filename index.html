@@ -8,11 +8,15 @@
 </head>
 <body>
     <div class="game-container">
+        <div class="debug-info" id="debugInfo">
+            Загрузка...
+        </div>
         <div class="game-field" id="gameField">
-            <img src="player.png" alt="Player" id="player" class="player">
+            <img src="player.png" alt="Player" id="player" class="player" onerror="handleImageError('player')">
         </div>
         <div class="controls-info">
             <p>Управление: WASDQEZX</p>
+            <p>Позиция: <span id="positionInfo">0, 0</span></p>
         </div>
     </div>
     <script src="game.js"></script>
