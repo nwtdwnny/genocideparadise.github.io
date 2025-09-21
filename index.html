@@ -3,69 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Моя Кото-Игра</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Игровое поле</title>
+    <link rel="stylesheet" href="stile.css">
 </head>
 <body>
-    <h1>Genparadise</h1>
-    
-    <div id="game-container">
-        <div id="game-field">
-            <!-- Игровое поле будет сгенерировано JavaScript -->
-            <div id="player">
-                <img src="player.png" alt="Игрок">
-            </div>
-            <div id="coordinates">X: 0, Y: 0</div>
+    <div class="game-container">
+        <div class="game-field" id="gameField">
+            <div class="grid-container" id="grid"></div>
+            <div class="player" id="player"></div>
         </div>
-        
-        <div id="game-ui">
-            <div class="panel">
-                <h3>Управление</h3>
-                <div class="controls">
-                    <button class="control-btn" data-key="Q">Q</button>
-                    <button class="control-btn" data-key="W">W</button>
-                    <button class="control-btn" data-key="E">E</button>
-                    <button class="control-btn" data-key="A">A</button>
-                    <button class="control-btn" id="center-btn">●</button>
-                    <button class="control-btn" data-key="D">D</button>
-                    <button class="control-btn" data-key="Z">Z</button>
-                    <button class="control-btn" data-key="X">X</button>
-                    <button class="control-btn" data-key="S">S</button>
-                </div>
-                <p style="font-size: 12px; margin-top: 10px;">Используйте WASD/QEZX для движения</p>
-            </div>
-            
-            <div class="panel">
-                <h3>Параметры</h3>
-                <div class="stats-grid">
-                    <div class="stat">Здоровье: <span id="health-value">100</span></div>
-                    <div class="stat">Сытость: <span id="hunger-value">100</span></div>
-                    <div class="stat">Энергия: <span id="energy-value">100</span></div>
-                    <div class="stat">Настроение: <span id="mood-value">100</span></div>
-                </div>
-            </div>
-            
-            <div class="panel">
-                <h3>Навыки</h3>
-                <ul class="skills-list">
-                    <li>Сила: <span id="strength-value">5</span></li>
-                    <li>Ловкость: <span id="agility-value">5</span></li>
-                    <li>Выносливость: <span id="stamina-value">5</span></li>
-                    <li>Интеллект: <span id="intelligence-value">5</span></li>
-                </ul>
-            </div>
-            
-            <div class="panel">
-                <h3>Действия</h3>
-                <ul class="actions-list">
-                    <li><button class="action-btn">Осмотреться</button></li>
-                    <li><button class="action-btn">Отдохнуть</button></li>
-                    <li><button class="action-btn">Поискать еду</button></li>
-                </ul>
-            </div>
+        <div class="controls">
+            <p>Управление: WASDQEZX</p>
+            <p>Позиция: <span id="position">0, 0</span></p>
+            <p>Клетка: <span id="cell">0, 0</span></p>
         </div>
     </div>
-
     <script src="game.js"></script>
 </body>
 </html>
