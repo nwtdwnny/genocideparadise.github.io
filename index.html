@@ -3,62 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Genparadise</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Моя Кото-Игра</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <h1>Моя Кото-Игра</h1>
+    
     <div id="game-container">
-        <!-- Игровое поле будет создано через JavaScript -->
-        <div id="game-field"></div>
-
-        <!-- Блоки для интерфейса, как в CatWar -->
-        <div id="ui-container">
-            <div id="actions-panel">
+        <div id="game-field">
+            <!-- Игровое поле будет сгенерировано JavaScript -->
+            <div id="player">
+                <img src="images/player.png" alt="Игрок">
+            </div>
+            <div id="coordinates">X: 0, Y: 0</div>
+        </div>
+        
+        <div id="game-ui">
+            <div class="panel">
+                <h3>Управление</h3>
+                <div class="controls">
+                    <button class="control-btn" data-key="Q">Q</button>
+                    <button class="control-btn" data-key="W">W</button>
+                    <button class="control-btn" data-key="E">E</button>
+                    <button class="control-btn" data-key="A">A</button>
+                    <button class="control-btn" id="center-btn">●</button>
+                    <button class="control-btn" data-key="D">D</button>
+                    <button class="control-btn" data-key="Z">Z</button>
+                    <button class="control-btn" data-key="X">X</button>
+                    <button class="control-btn" data-key="S">S</button>
+                </div>
+                <p style="font-size: 12px; margin-top: 10px;">Используйте WASD/QEZX для движения</p>
+            </div>
+            
+            <div class="panel">
+                <h3>Параметры</h3>
+                <div class="stats-grid">
+                    <div class="stat">Здоровье: <span id="health-value">100</span></div>
+                    <div class="stat">Сытость: <span id="hunger-value">100</span></div>
+                    <div class="stat">Энергия: <span id="energy-value">100</span></div>
+                    <div class="stat">Настроение: <span id="mood-value">100</span></div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>Навыки</h3>
+                <ul class="skills-list">
+                    <li>Сила: <span id="strength-value">5</span></li>
+                    <li>Ловкость: <span id="agility-value">5</span></li>
+                    <li>Выносливость: <span id="stamina-value">5</span></li>
+                    <li>Интеллект: <span id="intelligence-value">5</span></li>
+                </ul>
+            </div>
+            
+            <div class="panel">
                 <h3>Действия</h3>
-                <div id="actions-list">
-                    <!-- Сюда добавим кнопки действий позже -->
-                    <p>Доступных действий нет.</p>
-                </div>
-            </div>
-
-            <div id="stats-panel">
-                <h3>Персонаж</h3>
-                <div id="parameters">
-                    <div class="stat" id="health">
-                        <label>Здоровье:</label>
-                        <div class="bar"><div class="fill" style="width: 100%"></div></div>
-                        <span>100/100</span>
-                    </div>
-                    <div class="stat" id="satiety">
-                        <label>Сытость:</label>
-                        <div class="bar"><div class="fill" style="width: 80%"></div></div>
-                        <span>80/100</span>
-                    </div>
-                    <!-- Добавь другие параметры по аналогии -->
-                </div>
-
-                <h4>Навыки</h4>
-                <div id="skills">
-                    <div class="skill" id="strength">
-                        <label>Сила:</label>
-                        <span>5</span>
-                    </div>
-                    <div class="skill" id="agility">
-                        <label>Ловкость:</label>
-                        <span>5</span>
-                    </div>
-                    <!-- Добавь другие навыки по аналогии -->
-                </div>
-            </div>
-
-            <div id="inventory-panel">
-                <h3>Во рту</h3>
-                <div id="inventory">
-                    <p>Предметов нет.</p>
-                </div>
+                <ul class="actions-list">
+                    <li><button class="action-btn">Осмотреться</button></li>
+                    <li><button class="action-btn">Отдохнуть</button></li>
+                    <li><button class="action-btn">Поискать еду</button></li>
+                </ul>
             </div>
         </div>
     </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
 
     <script src="js/game.js"></script>
 </body>
