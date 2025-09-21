@@ -1,235 +1,154 @@
-// Конфигурация игрового поля
-const COLS = 10;   // 10 колонн
-const ROWS = 6;    // 6 рядов
-const FIELD_WIDTH = 1000;
-const FIELD_HEIGHT = 1000;
-
-// Размеры клеток (не квадратные)
-const CELL_WIDTH = FIELD_WIDTH / COLS;
-const CELL_HEIGHT = FIELD_HEIGHT / ROWS;
-
-// Основной класс игры
 class Game {
     constructor() {
-        this.playerPosition = { x: 0, y: 0 };
-        this.playerStats = {
-            health: 100,
-            hunger: 100,
-            energy: 100,
-            mood: 100,
-            strength: 5,
-            agility: 5,
-            stamina: 5,
-            intelligence: 5
-        };
+        this.fieldWidth = 1000;
+        this.fieldHeight = 1000;
+        this.rows = 6;
+        this.cols = 10;
+        this.cellWidth = this.fieldWidth / this.cols;
+        this.cellHeight = this.fieldHeight / this.rows;
+        
+        this.player = document.getElementById('player');
+        this.gameField = document.getElementById('gameField');
+        this.grid = document.getElementById('grid');
+        this.positionDisplay = document.getElementById('position');
+        this.cellDisplay = document.getElementById('cell');
+        
+        this.playerX = 0;
+        this.playerY = 0;
+        this.moveDelay = 180;
+        this.lastMoveTime = 0;
+        this.keysPressed = {};
+        this.moveInterval = null;
         
         this.init();
     }
     
     init() {
-        this.createGameField();
+        this.createGrid();
         this.setupEventListeners();
         this.updatePlayerPosition();
-        this.updateStatsDisplay();
-        
-        console.log('Игра загружена! Размер клеток: ' + 
-                   CELL_WIDTH.toFixed(1) + 'x' + 
-                   CELL_HEIGHT.toFixed(1) + ' пикселей');
+        this.startMovementLoop();
     }
     
-    // Создание игрового поля
-    createGameField() {
-        const gameField = document.getElementById('game-field');
+    createGrid() {
+        this.grid.innerHTML = '';
         
-        // Очищаем поле, но сохраняем игрока и координаты
-        const playerElement = document.getElementById('player');
-        const coordinatesElement = document.getElementById('coordinates');
-        
-        // Временно удаляем их
-        if (playerElement) playerElement.remove();
-        if (coordinatesElement) coordinatesElement.remove();
-        
-        // Очищаем поле
-        gameField.innerHTML = '';
-        
-        // Создаем контейнер для клеток
-        const cellsContainer = document.createElement('div');
-        cellsContainer.id = 'cells-container';
-        cellsContainer.style.position = 'relative';
-        cellsContainer.style.width = '100%';
-        cellsContainer.style.height = '100%';
-        
-        for (let y = 0; y < ROWS; y++) {
-            for (let x = 0; x < COLS; x++) {
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
                 const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.style.width = CELL_WIDTH + 'px';
-                cell.style.height = CELL_HEIGHT + 'px';
-                cell.style.left = (x * CELL_WIDTH) + 'px';
-                cell.style.top = (y * CELL_HEIGHT) + 'px';
-                
-                // Добавляем чередование цветов для наглядности
-                if ((x + y) % 2 === 0) {
-                    cell.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                } else {
-                    cell.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
-                }
-                
-                // Добавляем координаты в ячейку (для отладки)
-                cell.setAttribute('data-x', x);
-                cell.setAttribute('data-y', y);
-                
-                cellsContainer.appendChild(cell);
+                cell.className = 'grid-cell';
+                cell.style.width = this.cellWidth + 'px';
+                cell.style.height = this.cellHeight + 'px';
+                cell.style.left = (col * this.cellWidth) + 'px';
+                cell.style.top = (row * this.cellHeight) + 'px';
+                this.grid.appendChild(cell);
             }
         }
-        
-        gameField.appendChild(cellsContainer);
-        
-        // Возвращаем игрока и координаты
-        if (playerElement) gameField.appendChild(playerElement);
-        if (coordinatesElement) gameField.appendChild(coordinatesElement);
-        
-        // Обновляем позицию игрока
-        this.updatePlayerPosition();
     }
     
-    // Настройка обработчиков событий
     setupEventListeners() {
-        // Обработка нажатий клавиш
-        document.addEventListener('keydown', (event) => {
-            this.handleKeyPress(event);
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if ('wasdqezx'.includes(key)) {
+                e.preventDefault();
+                this.keysPressed[key] = true;
+            }
         });
         
-        // Обработка кликов по кнопкам управления
-        document.querySelectorAll('.control-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const key = btn.getAttribute('data-key');
-                if (key) {
-                    this.handleMovement(key);
-                }
-            });
-        });
-        
-        // Заглушки для действий
-        document.querySelectorAll('.action-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.showMessage('Действие "' + btn.textContent + '" будет реализовано позже!');
-            });
-        });
-        
-        // Обработка кликов по клеткам поля
-        document.getElementById('game-field').addEventListener('click', (e) => {
-            if (e.target.classList.contains('cell')) {
-                const x = parseInt(e.target.getAttribute('data-x'));
-                const y = parseInt(e.target.getAttribute('data-y'));
-                this.moveToCell(x, y);
+        document.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if ('wasdqezx'.includes(key)) {
+                this.keysPressed[key] = false;
             }
         });
     }
     
-    // Обработка нажатия клавиш
-    handleKeyPress(event) {
-        const key = event.key.toUpperCase();
-        this.handleMovement(key);
+    startMovementLoop() {
+        setInterval(() => {
+            this.handleContinuousMovement();
+        }, 50);
+    }
+    
+    handleContinuousMovement() {
+        const currentTime = Date.now();
+        if (currentTime - this.lastMoveTime < this.moveDelay) {
+            return;
+        }
         
-        // Предотвращаем прокрутку страницы при использовании клавиш WASD
-        if (['W', 'A', 'S', 'D', 'Q', 'E', 'Z', 'X'].includes(key)) {
-            event.preventDefault();
+        let moved = false;
+        
+        // Обработка перемещения по диагоналям
+        if (this.keysPressed['q']) {
+            moved = this.movePlayer(-1, -1) || moved;
+        }
+        if (this.keysPressed['e']) {
+            moved = this.movePlayer(1, -1) || moved;
+        }
+        if (this.keysPressed['z']) {
+            moved = this.movePlayer(-1, 1) || moved;
+        }
+        if (this.keysPressed['x']) {
+            moved = this.movePlayer(1, 1) || moved;
+        }
+        
+        // Обработка перемещения по прямым направлениям
+        if (this.keysPressed['w']) {
+            moved = this.movePlayer(0, -1) || moved;
+        }
+        if (this.keysPressed['s']) {
+            moved = this.movePlayer(0, 1) || moved;
+        }
+        if (this.keysPressed['a']) {
+            moved = this.movePlayer(-1, 0) || moved;
+        }
+        if (this.keysPressed['d']) {
+            moved = this.movePlayer(1, 0) || moved;
+        }
+        
+        if (moved) {
+            this.lastMoveTime = currentTime;
         }
     }
     
-    // Обработка движения
-    handleMovement(key) {
-        switch(key) {
-            case 'W': this.movePlayer(0, -1); break;  // Вверх
-            case 'S': this.movePlayer(0, 1); break;   // Вниз
-            case 'A': this.movePlayer(-1, 0); break;  // Влево
-            case 'D': this.movePlayer(1, 0); break;   // Вправо
-            case 'Q': this.movePlayer(-1, -1); break; // Вверх-влево
-            case 'E': this.movePlayer(1, -1); break;  // Вверх-вправо
-            case 'Z': this.movePlayer(-1, 1); break;  // Вниз-влево
-            case 'X': this.movePlayer(1, 1); break;   // Вниз-вправо
-        }
-    }
-    
-    // Движение игрока
     movePlayer(dx, dy) {
-        const newX = this.playerPosition.x + dx;
-        const newY = this.playerPosition.y + dy;
+        const newX = this.playerX + dx;
+        const newY = this.playerY + dy;
         
-        // Проверяем границы поля
-        if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
-            this.playerPosition.x = newX;
-            this.playerPosition.y = newY;
+        // Проверка границ поля
+        if (newX >= 0 && newX < this.cols && newY >= 0 && newY < this.rows) {
+            this.playerX = newX;
+            this.playerY = newY;
             this.updatePlayerPosition();
-            
-            // Немного уменьшаем энергию при движении
-            this.playerStats.energy = Math.max(0, this.playerStats.energy - 1);
-            this.updateStatsDisplay();
+            return true;
         }
+        return false;
     }
     
-    // Перемещение к конкретной клетке
-    moveToCell(x, y) {
-        if (x >= 0 && x < COLS && y >= 0 && y < ROWS) {
-            this.playerPosition.x = x;
-            this.playerPosition.y = y;
-            this.updatePlayerPosition();
-            this.showMessage(`Перемещение в клетку (${x}, ${y})`);
-        }
-    }
-    
-    // Обновление позиции игрока
     updatePlayerPosition() {
-        const player = document.getElementById('player');
-        if (player) {
-            player.style.left = (this.playerPosition.x * CELL_WIDTH + CELL_WIDTH/2 - 35) + 'px';
-            player.style.top = (this.playerPosition.y * CELL_HEIGHT + CELL_HEIGHT/2 - 35) + 'px';
-            
-            // Обновляем координаты
-            const coords = document.getElementById('coordinates');
-            if (coords) {
-                coords.textContent = `X: ${this.playerPosition.x}, Y: ${this.playerPosition.y}`;
-            }
-        }
+        // Центрируем персонаж в клетке
+        const pixelX = (this.playerX * this.cellWidth) + (this.cellWidth - 50) / 2;
+        const pixelY = (this.playerY * this.cellHeight) + (this.cellHeight - 50) / 2;
+        
+        this.player.style.left = pixelX + 'px';
+        this.player.style.top = pixelY + 'px';
+        
+        // Обновляем информацию о позиции
+        this.positionDisplay.textContent = `${pixelX}, ${pixelY}`;
+        this.cellDisplay.textContent = `${this.playerX}, ${this.playerY}`;
     }
     
-    // Обновление статистики на экране
-    updateStatsDisplay() {
-        const stats = this.playerStats;
-        document.getElementById('health-value').textContent = stats.health;
-        document.getElementById('hunger-value').textContent = stats.hunger;
-        document.getElementById('energy-value').textContent = stats.energy;
-        document.getElementById('mood-value').textContent = stats.mood;
-        document.getElementById('strength-value').textContent = stats.strength;
-        document.getElementById('agility-value').textContent = stats.agility;
-        document.getElementById('stamina-value').textContent = stats.stamina;
-        document.getElementById('intelligence-value').textContent = stats.intelligence;
-    }
-    
-    // Вспомогательная функция для показа сообщений
-    showMessage(text) {
-        // Создаем временное сообщение
-        const message = document.createElement('div');
-        message.textContent = text;
-        message.style.position = 'fixed';
-        message.style.top = '20px';
-        message.style.left = '50%';
-        message.style.transform = 'translateX(-50%)';
-        message.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        message.style.color = 'white';
-        message.style.padding = '10px 20px';
-        message.style.borderRadius = '5px';
-        message.style.zIndex = '1000';
-        
-        document.body.appendChild(message);
-        
-        // Удаляем сообщение через 3 секунды
-        setTimeout(() => {
-            document.body.removeChild(message);
-        }, 3000);
+    getCurrentCell() {
+        return {
+            x: Math.floor(this.playerX / this.cellWidth),
+            y: Math.floor(this.playerY / this.cellHeight)
+        };
     }
 }
+
+// Инициализация игры при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    new Game();
+});
 
 // Инициализация игры при загрузке документа
 document.addEventListener('DOMContentLoaded', function() {
