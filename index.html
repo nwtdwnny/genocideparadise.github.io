@@ -4,21 +4,245 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игровое поле</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            text-align: center;
+        }
+        
+        .game-field {
+            width: 1000px;
+            height: 1000px;
+            background: linear-gradient(rgba(52, 152, 219, 0.8), rgba(41, 128, 185, 0.8));
+            border: 4px solid #2c3e50;
+            position: relative;
+            margin: 20px auto;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+        }
+        
+        /* Сетка */
+        .grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+            background-size: 100px 166.67px;
+            pointer-events: none;
+        }
+        
+        .player {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            border: 3px solid #fff;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+            transition: none;
+            z-index: 10;
+        }
+        
+        .player::after {
+            content: 'P';
+        }
+        
+        .controls {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .position-info {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #ecf0f1;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(52, 152, 219, 0.8);
+            border-radius: 5px;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <div class="game-container">
-        <div class="debug-info" id="debugInfo">
-            Загрузка...
-        </div>
+        <h1 style="color: white; margin-bottom: 20px;">Игровое поле</h1>
+        
         <div class="game-field" id="gameField">
-            <img src="player.png" alt="Player" id="player" class="player" onerror="handleImageError('player')">
+            <div class="grid"></div>
+            <div class="player" id="player"></div>
         </div>
-        <div class="controls-info">
-            <p>Управление: WASDQEZX</p>
-            <p>Позиция: <span id="positionInfo">0, 0</span></p>
+        
+        <div class="controls">
+            <h3>Управление: WASDQEZX</h3>
+            <div class="position-info">
+                Позиция: <span id="positionInfo">0, 0</span>
+            </div>
+            <div class="status" id="status">
+                Готов к игре! Нажмите WASDQEZX для движения
+            </div>
         </div>
     </div>
-    <script src="game.js"></script>
+
+    <script>
+        class Game {
+            constructor() {
+                this.player = document.getElementById('player');
+                this.positionInfo = document.getElementById('positionInfo');
+                this.status = document.getElementById('status');
+                
+                this.cellWidth = 100;
+                this.cellHeight = 166.67;
+                this.playerSize = 80;
+                this.moveDelay = 180;
+                
+                this.playerX = 0;
+                this.playerY = 0;
+                this.keysPressed = {};
+                this.moveInterval = null;
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('🚀 Игра запущена!');
+                this.status.textContent = 'Игра запущена! Двигайтесь с помощью WASDQEZX';
+                
+                // Центрируем игрока
+                this.centerPlayer();
+                
+                // Навешиваем обработчики
+                document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                document.addEventListener('keyup', (e) => this.handleKeyUp(e));
+                
+                // Предотвращаем прокрутку страницы
+                document.addEventListener('keydown', (e) => {
+                    if (['w', 'a', 's', 'd', 'q', 'e', 'z', 'x'].includes(e.key.toLowerCase())) {
+                        e.preventDefault();
+                    }
+                });
+            }
+            
+            centerPlayer() {
+                // Стартовая позиция - центр поля
+                this.playerX = Math.floor((1000 - this.playerSize) / 2);
+                this.playerY = Math.floor((1000 - this.playerSize) / 2);
+                this.updatePlayerPosition();
+            }
+            
+            handleKeyDown(e) {
+                const key = e.key.toLowerCase();
+                
+                if (['w', 'a', 's', 'd', 'q', 'e', 'z', 'x'].includes(key)) {
+                    if (!this.keysPressed[key]) {
+                        this.keysPressed[key] = true;
+                        this.movePlayer(key);
+                        
+                        if (!this.moveInterval) {
+                            this.moveInterval = setInterval(() => {
+                                this.continuousMove();
+                            }, this.moveDelay);
+                        }
+                        
+                        this.status.textContent = `Движение: ${key.toUpperCase()}`;
+                    }
+                }
+            }
+            
+            handleKeyUp(e) {
+                const key = e.key.toLowerCase();
+                
+                if (this.keysPressed[key]) {
+                    delete this.keysPressed[key];
+                    
+                    if (Object.keys(this.keysPressed).length === 0 && this.moveInterval) {
+                        clearInterval(this.moveInterval);
+                        this.moveInterval = null;
+                        this.status.textContent = 'Остановились';
+                    }
+                }
+            }
+            
+            continuousMove() {
+                Object.keys(this.keysPressed).forEach(key => {
+                    this.movePlayer(key);
+                });
+            }
+            
+            movePlayer(key) {
+                let newX = this.playerX;
+                let newY = this.playerY;
+                
+                switch(key) {
+                    case 'w': newY -= this.cellHeight; break;
+                    case 's': newY += this.cellHeight; break;
+                    case 'a': newX -= this.cellWidth; break;
+                    case 'd': newX += this.cellWidth; break;
+                    case 'q': newX -= this.cellWidth; newY -= this.cellHeight; break;
+                    case 'e': newX += this.cellWidth; newY -= this.cellHeight; break;
+                    case 'z': newX -= this.cellWidth; newY += this.cellHeight; break;
+                    case 'x': newX += this.cellWidth; newY += this.cellHeight; break;
+                }
+                
+                // Проверка границ
+                if (newX >= 0 && newX <= 1000 - this.playerSize && 
+                    newY >= 0 && newY <= 1000 - this.playerSize) {
+                    this.playerX = newX;
+                    this.playerY = newY;
+                    this.updatePlayerPosition();
+                }
+            }
+            
+            updatePlayerPosition() {
+                this.player.style.left = this.playerX + 'px';
+                this.player.style.top = this.playerY + 'px';
+                this.positionInfo.textContent = `${this.playerX}, ${this.playerY}`;
+            }
+        }
+
+        // Запускаем игру когда страница загрузится
+        window.addEventListener('load', () => {
+            console.log('📄 Страница загружена');
+            new Game();
+        });
+
+        // Обработка ошибок
+        window.addEventListener('error', (e) => {
+            console.error('❌ Ошибка:', e.error);
+            document.getElementById('status').textContent = 'Ошибка: ' + e.message;
+        });
+    </script>
 </body>
 </html>
