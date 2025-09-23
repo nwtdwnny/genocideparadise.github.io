@@ -7,7 +7,6 @@ class Game {
         this.cellHeight = 166.67;
         this.moveDelay = 180;
         
-        // Позиция в клетках (не в пикселях)
         this.gridX = 0;
         this.gridY = 0;
         
@@ -20,45 +19,51 @@ class Game {
     init() {
         console.log('Игра инициализируется...');
         
-        // Начальная позиция в левом верхнем углу
+        // Ждем загрузки изображения персонажа
+        this.player.onload = () => {
+            console.log('Персонаж загружен, размер:', this.player.naturalWidth, 'x', this.player.naturalHeight);
+            this.startGame();
+        };
+        
+        // Если изображение уже загружено
+        if (this.player.complete) {
+            this.startGame();
+        }
+    }
+    
+    startGame() {
+        // Начальная позиция в первой клетке
         this.gridX = 0;
         this.gridY = 0;
         this.updatePlayerPosition();
         
-        // Обработчики событий клавиатуры
-        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-        document.addEventListener('keyup', (e) => this.handleKeyUp(e));
+        // Обработчики клавиш
+        window.addEventListener('keydown', (e) => this.handleKeyDown(e));
+        window.addEventListener('keyup', (e) => this.handleKeyUp(e));
         
-        // Предотвращаем стандартное поведение клавиш
-        document.addEventListener('keydown', (e) => {
-            const key = e.key.toLowerCase();
-            if (['w', 'a', 's', 'd', 'q', 'e', 'z', 'x'].includes(key)) {
-                e.preventDefault();
-            }
-        });
-        
-        // Фокус на странице
+        // Фокус на window
         window.focus();
-        document.body.focus();
         
         console.log('Игра готова. Используйте WASDQEZX для движения');
     }
     
     handleKeyDown(e) {
         const key = e.key.toLowerCase();
-        console.log('Нажата клавиша:', key);
         
-        if (['w', 'a', 's', 'd', 'q', 'e', 'z', 'x'].includes(key) && !this.keysPressed[key]) {
-            this.keysPressed[key] = true;
+        if (['w', 'a', 's', 'd', 'q', 'e', 'z', 'x'].includes(key)) {
+            e.preventDefault();
             
-            // Первое мгновенное движение
-            this.movePlayer(key);
-            
-            // Запускаем интервал для непрерывного движения
-            if (!this.moveInterval) {
-                this.moveInterval = setInterval(() => {
-                    this.continuousMove();
-                }, this.moveDelay);
+            if (!this.keysPressed[key]) {
+                this.keysPressed[key] = true;
+                console.log('Нажата клавиша:', key);
+                
+                this.movePlayer(key);
+                
+                if (!this.moveInterval) {
+                    this.moveInterval = setInterval(() => {
+                        this.continuousMove();
+                    }, this.moveDelay);
+                }
             }
         }
     }
@@ -70,7 +75,6 @@ class Game {
             delete this.keysPressed[key];
             console.log('Отпущена клавиша:', key);
             
-            // Если больше нет нажатых клавиш, останавливаем интервал
             if (Object.keys(this.keysPressed).length === 0 && this.moveInterval) {
                 clearInterval(this.moveInterval);
                 this.moveInterval = null;
@@ -79,7 +83,6 @@ class Game {
     }
     
     continuousMove() {
-        // Двигаемся по всем нажатым клавишам
         Object.keys(this.keysPressed).forEach(key => {
             this.movePlayer(key);
         });
@@ -90,47 +93,26 @@ class Game {
         let newGridY = this.gridY;
         
         switch(key) {
-            case 'w': // Вверх
-                newGridY--;
-                break;
-            case 's': // Вниз
-                newGridY++;
-                break;
-            case 'a': // Влево
-                newGridX--;
-                break;
-            case 'd': // Вправо
-                newGridX++;
-                break;
-            case 'q': // Вверх-влево
-                newGridX--;
-                newGridY--;
-                break;
-            case 'e': // Вверх-вправо
-                newGridX++;
-                newGridY--;
-                break;
-            case 'z': // Вниз-влево
-                newGridX--;
-                newGridY++;
-                break;
-            case 'x': // Вниз-вправо
-                newGridX++;
-                newGridY++;
-                break;
+            case 'w': newGridY--; break;
+            case 's': newGridY++; break;
+            case 'a': newGridX--; break;
+            case 'd': newGridX++; break;
+            case 'q': newGridX--; newGridY--; break;
+            case 'e': newGridX++; newGridY--; break;
+            case 'z': newGridX--; newGridY++; break;
+            case 'x': newGridX++; newGridY++; break;
         }
         
-        // Проверяем границы (10 колонок × 6 рядов)
         if (newGridX >= 0 && newGridX < 10 && newGridY >= 0 && newGridY < 6) {
             this.gridX = newGridX;
             this.gridY = newGridY;
             this.updatePlayerPosition();
-            console.log(`Перемещение: ${key}, Позиция: ${this.gridX}, ${this.gridY}`);
+            console.log(`Движение: ${key} → Клетка [${this.gridX}, ${this.gridY}]`);
         }
     }
     
     updatePlayerPosition() {
-        // Позиционируем точно в левый верхний угол клетки
+        // Позиционируем в левый верхний угол клетки
         const pixelX = this.gridX * this.cellWidth;
         const pixelY = this.gridY * this.cellHeight;
         
@@ -139,19 +121,12 @@ class Game {
     }
 }
 
-// Запуск игры при загрузке страницы
+// Запуск игры
 window.addEventListener('load', () => {
     console.log('Страница загружена');
     new Game();
 });
 
-// Фокус на окне для обработки клавиш
 window.addEventListener('click', () => {
     window.focus();
-    document.body.focus();
-});
-
-// Обработка ошибок
-window.addEventListener('error', (e) => {
-    console.error('Ошибка:', e.error);
 });
