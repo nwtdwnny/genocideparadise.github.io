@@ -4,13 +4,19 @@
     box-sizing: border-box;
 }
 
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
 body {
     background: #808080;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    overflow: hidden;
+    padding: 20px;
 }
 
 .game-field {
@@ -32,8 +38,8 @@ body {
     width: 100%;
     height: 100%;
     background-image: 
-        linear-gradient(to right, rgba(255, 0, 0, 0.3) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 0, 0, 0.3) 1px, transparent 1px);
+        linear-gradient(to right, rgba(128, 128, 128, 0.5) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(128, 128, 128, 0.5) 1px, transparent 1px);
     background-size: 100px 166.67px;
     pointer-events: none;
 }
@@ -45,4 +51,5 @@ body {
     display: block;
     transition: none;
     z-index: 10;
+    object-fit: contain;
 }
