@@ -18,28 +18,35 @@ class Game {
     }
     
     init() {
-        // Центрируем игрока в начале
-        this.gridX = 4; // 5-я колонка (0-based)
-        this.gridY = 2; // 3-й ряд (0-based)
+        console.log('Игра инициализируется...');
+        
+        // Начальная позиция в левом верхнем углу
+        this.gridX = 0;
+        this.gridY = 0;
         this.updatePlayerPosition();
         
-        // Обработчики событий
+        // Обработчики событий клавиатуры
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         document.addEventListener('keyup', (e) => this.handleKeyUp(e));
         
-        // Предотвращаем прокрутку страницы
+        // Предотвращаем стандартное поведение клавиш
         document.addEventListener('keydown', (e) => {
-            if (['w', 'a', 's', 'd', 'q', 'e', 'z', 'x'].includes(e.key.toLowerCase())) {
+            const key = e.key.toLowerCase();
+            if (['w', 'a', 's', 'd', 'q', 'e', 'z', 'x'].includes(key)) {
                 e.preventDefault();
             }
         });
         
         // Фокус на странице
         window.focus();
+        document.body.focus();
+        
+        console.log('Игра готова. Используйте WASDQEZX для движения');
     }
     
     handleKeyDown(e) {
         const key = e.key.toLowerCase();
+        console.log('Нажата клавиша:', key);
         
         if (['w', 'a', 's', 'd', 'q', 'e', 'z', 'x'].includes(key) && !this.keysPressed[key]) {
             this.keysPressed[key] = true;
@@ -61,6 +68,7 @@ class Game {
         
         if (this.keysPressed[key]) {
             delete this.keysPressed[key];
+            console.log('Отпущена клавиша:', key);
             
             // Если больше нет нажатых клавиш, останавливаем интервал
             if (Object.keys(this.keysPressed).length === 0 && this.moveInterval) {
@@ -117,11 +125,12 @@ class Game {
             this.gridX = newGridX;
             this.gridY = newGridY;
             this.updatePlayerPosition();
+            console.log(`Перемещение: ${key}, Позиция: ${this.gridX}, ${this.gridY}`);
         }
     }
     
     updatePlayerPosition() {
-        // Позиционируем точно по сетке
+        // Позиционируем точно в левый верхний угол клетки
         const pixelX = this.gridX * this.cellWidth;
         const pixelY = this.gridY * this.cellHeight;
         
@@ -132,10 +141,17 @@ class Game {
 
 // Запуск игры при загрузке страницы
 window.addEventListener('load', () => {
+    console.log('Страница загружена');
     new Game();
 });
 
 // Фокус на окне для обработки клавиш
 window.addEventListener('click', () => {
     window.focus();
+    document.body.focus();
+});
+
+// Обработка ошибок
+window.addEventListener('error', (e) => {
+    console.error('Ошибка:', e.error);
 });
